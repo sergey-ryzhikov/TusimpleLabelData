@@ -66,7 +66,7 @@ cd tusimple; rename -v --force 's/_512x288.json/.json/' *.json
 
 ### 5. Compress modified files
 ``` bash
-find tusimple_shrinked -type f | sort -V | xargs zip train_set_512x288_gt.zip  
+find tusimple -type f | sort -V | xargs zip train_set_512x288_gt.zip  
 
 # zip -0 to add files without compression
 ```
