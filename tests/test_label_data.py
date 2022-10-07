@@ -28,7 +28,12 @@ def test_del():
     del item['lanes']
 
 def test_rel():
-    LabelData.from_json(json_ok).to_relative(100,100)
+    item = LabelData.from_json('{"lanes": [[-2, 51]], "h_samples": [1]}')
+    item_rel = item.to_relative(100,100)
+    assert item == item_rel.to_absolute(100,100), "wrong"
+    assert item != item_rel.to_absolute(99,100), "wrong 99"
+    assert item != item_rel.to_absolute(101,100), "wrong 101"
+
 
 if __name__ == "__main__":
     test_parsing()
