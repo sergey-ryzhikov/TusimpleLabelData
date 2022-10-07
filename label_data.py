@@ -53,9 +53,15 @@ class LabelData:
 
     @property
     def max_lanes(self):
-      return max(next((x for x in reversed(lane) if x > 0), 0)  # last from the end != -2
+      if self.lanes:
+        return max(next((x for x in reversed(lane) if x > 0), 0)  # last from the end != -2
                         for lane in self.lanes)
+      else:
+        return 0
 
     @property
     def max_h_samples(self):
-      return self.h_samples[-1]  # return last one
+      if self.h_samples:
+        return self.h_samples[-1]  # return the last one
+      else:
+        return 0
