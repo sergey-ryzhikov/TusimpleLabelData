@@ -1,7 +1,7 @@
 import json
 
 class LabelData:
-    """
+    """ Parse and convert label data.
     """
     __slots__ = 'lanes', 'h_samples', 'raw_file', 'relative'
     @classmethod
@@ -14,6 +14,9 @@ class LabelData:
       self.h_samples = h_samples
       self.raw_file = raw_file
       self.relative = relative
+
+    def __repr__(self):
+      return f"LabelData(raw_file='{self.raw_file}')"
 
     def to_json(self): 
       attrs = self.__slots__
@@ -34,7 +37,7 @@ class LabelData:
                           for lane in self.lanes],
           raw_file=self.raw_file,
           relative=True
-      )
+        )
 
     def to_absolute(self, dim_lanes, dim_h_samples):
       """ Convert relative coordinates to absolute ones. """
@@ -49,7 +52,7 @@ class LabelData:
                           for lane in self.lanes],
           raw_file=self.raw_file,
           relative=None
-      )
+        )
 
     @property
     def max_lanes(self):
