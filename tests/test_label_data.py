@@ -27,9 +27,12 @@ def test_del():
     item = LabelData.from_json(json_ok)
     del item['lanes']
 
-    
+def test_rel():
+    LabelData.from_json(json_ok).to_relative(100,100)
+
 if __name__ == "__main__":
     test_parsing()
     test_rerp()
     test_dict()
     test_del()
+    test_rel()

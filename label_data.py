@@ -13,7 +13,7 @@ class LabelData(dict):
                       )
         if relative:
             kwargs['relative'] = relative
-            
+
         super().__init__(**kwargs)
         # self.__dict__ = self
    
@@ -34,7 +34,7 @@ class LabelData(dict):
     def to_relative(self, dim_lanes, dim_h_samples, round_=2):
       """ Convert absolute coordinates to the relative ones. 
       """
-      assert self['relative'] != True, "Coordinates are relative already."
+      assert 'relative' not in self or not self['relative'], "Coordinates are relative already."
       assert dim_lanes >= self.max_lanes, "The 'dim_lanes' is less than the current maximum."
       assert dim_h_samples >= self.max_h_samples, "The 'dim_h_samples' is less than the current maximum."
       
@@ -72,7 +72,7 @@ class LabelData(dict):
 
     @property
     def max_h_samples(self):
-      if self.h_samples:
+      if self['h_samples']:
         return self['h_samples'][-1]  # return the last one
       else:
         return 0
