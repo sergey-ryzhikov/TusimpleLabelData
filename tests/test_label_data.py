@@ -19,6 +19,17 @@ def test_rerp():
     repr = str(LabelData.from_json(json_ok))
     assert repr == json_ok_repr, f"wrong __repr__: {repr}"
 
+def test_dict():
+    n = len(LabelData.from_json(json_ok)['lanes'])
+    assert n != 0, "wrong len(x['lanes'])"
+
+def test_del():
+    item = LabelData.from_json(json_ok)
+    del item['lanes']
+
+    
 if __name__ == "__main__":
     test_parsing()
     test_rerp()
+    test_dict()
+    test_del()
