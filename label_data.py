@@ -6,33 +6,28 @@ class LabelData(dict):
     """
     __slots__ = 'lanes', 'h_samples', 'raw_file', 'relative'
 
-    def __init__(self, lanes=[], h_samples=[], raw_file='', relative=False):
-        kwargs = dict(lanes=lanes,
-                      h_samples=h_samples,
-                      raw_file=raw_file,
-                      )
+    def __init__(self, raw_file, h_samples, lanes=[], relative=False):
+        kwargs = dict(raw_file=raw_file, h_samples=h_samples, lanes=lanes)
         if relative:
-            kwargs['relative'] = relative
-
+            kwargs['relative'] = True
         super().__init__(**kwargs)
-        # self.__dict__ = self
-   
-    @classmethod
-    def from_json(cls, json_string):
-      info = json.loads(json_string)
-      return cls(**{k: info[k] if k in info else None for k in cls.__slots__})
 
     def __repr__(self):
-      return f"LabelData(raw_file='{self['raw_file']}')"
+        return f"LabelData(raw_file='{self['raw_file']}')"
+
+    @classmethod
+    def from_json(cls, json_string):
+        info = json.loads(json_string)
+        return cls(**{k: info[k] if k in info else None for k in cls.__slots__})
 
     def to_json(self): 
-      attrs = self.__slots__
-      if self['relative'] != True:
-        attrs = [x for x in attrs if x != 'relative']
-      return json.dumps({k: getattr(self, k, None) for k in attrs})
+        attrs = self.__slots__
+        if self['relative'] != True:
+            attrs = [x for x in attrs if x != 'relative']
+        return json.dumps({k: getattr(self, k, None) for k in attrs})
 
     def to_relative(self, dim_lanes, dim_h_samples, round_=2):
-      """ Convert absolute coordinates to the relative ones. 
+      """ Convert absolute coordinates to relative (in %). 
       """
       assert 'relative' not in self or not self['relative'], "Coordinates are relative already."
       assert dim_lanes >= self.max_lanes, "The 'dim_lanes' is less than the current maximum."
@@ -64,15 +59,19 @@ class LabelData(dict):
 
     @property
     def max_lanes(self):
-      if self['lanes']:
-        return max(next((x for x in reversed(lane) if x > 0), 0)  # last from the end != -2
+        """ Since always ordered, get the maximal of last positive elements.
+        """
+        if self['lanes']:
+            return max(next((x for x in reversed(lane) if x > 0), 0)  # last from the end != -2
                         for lane in self['lanes'])
-      else:
-        return 0
+        else:
+            return 0
 
     @property
     def max_h_samples(self):
-      if self['h_samples']:
-        return self['h_samples'][-1]  # return the last one
-      else:
-        return 0
+        """ Since always ordered and positive, get the last one.
+        """
+        if self['h_samples']:
+            return self['h_samples'][-1]  # return the last one
+        else:
+            return 0
