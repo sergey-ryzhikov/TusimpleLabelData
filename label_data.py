@@ -1,16 +1,19 @@
 import json
+from collections import OrderedDict
+import numpy as np
 
 
 class LabelData(dict):
     """ Parse and convert label data.
     """
     __slots__ = 'lanes', 'h_samples', 'raw_file', 'relative'
+    
+    def __init__(self, **kwargs):
+        default = {'lanes': [], 'h_samples': [], 'raw_file': None}
+        super().__init__({**default, **kwargs})
 
-    def __init__(self, raw_file, h_samples, lanes=[], relative=False):
-        kwargs = dict(raw_file=raw_file, h_samples=h_samples, lanes=lanes)
-        if relative:
-            kwargs['relative'] = True
-        super().__init__(**kwargs)
+        if not self.get('relative'):  # if false or None, just omit it
+            del self['relative']
 
     def __repr__(self):
         return f"LabelData(raw_file='{self['raw_file']}')"
@@ -18,13 +21,16 @@ class LabelData(dict):
     @classmethod
     def from_json(cls, json_string):
         info = json.loads(json_string)
-        return cls(**{k: info[k] if k in info else None for k in cls.__slots__})
+        return cls(**{k: info[k] for k in cls.__slots__ if k in info})
 
     def to_json(self): 
-        attrs = self.__slots__
-        if self['relative'] != True:
-            attrs = [x for x in attrs if x != 'relative']
-        return json.dumps({k: getattr(self, k, None) for k in attrs})
+        # preserve keys order the same as in the original json files
+        ordered = OrderedDict.fromkeys(self.__slots__, None)
+        ordered.update(self)
+
+        if self.get('relative') != True:
+            del ordered['relative']
+        return json.dumps(ordered, sort_keys=False)
 
     def to_relative(self, dim_lanes, dim_h_samples, round_=2):
         """ Convert absolute coordinates to relative (in %). 
@@ -43,7 +49,8 @@ class LabelData(dict):
             )
 
     def to_absolute(self, dim_lanes, dim_h_samples):
-        """ Convert relative coordinates to absolute ones. """
+        """ Convert relative coordinates to absolute ones.
+        """
         assert self['relative'] == True, "Coordinates are absolute."
         assert self.max_lanes <= 100, f"Relative value for max_lanes is invalid:{self.max_lanes}"
         assert self.max_h_samples <= 100, f"Relative value for h_samples is invalid:{self.max_h_samples}"
