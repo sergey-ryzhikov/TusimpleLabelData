@@ -8,7 +8,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
 from TusimpleUtils import TusimpleDataset
 
-
+import torch
 
 sample_root = (Path(__file__).parent / '../tusimple_sample_512x288/').resolve()
 
@@ -29,8 +29,12 @@ def test_resize():
 
     img2, label2 = TusimpleDataset(sample_root, resize_to=(256,512), crop=True)[0]
     assert img2.shape == (3, 256, 512), f"Wrong shape 2: {img2.shape}"
-    assert img1[32,:] == img2[0,:], f"Wrong crop"
+    assert torch.all(img1[:,32] == img2[:,0]), f"32nd row should become the first after crop"
+
+    img3, label3 = TusimpleDataset(sample_root, resize_to=(288,100), crop=True)[0]
+    assert img3.shape == (3, 288, 100), f"Wrong shape 3: {img3.shape}"
     
+
 
 def run_tests():
     from inspect import isfunction
