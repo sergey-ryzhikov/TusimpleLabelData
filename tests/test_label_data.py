@@ -42,20 +42,21 @@ def test_del():
 
 def test_rel():
     item = LabelData(**{'lanes': [[-2, 51]], 'h_samples': [1]})
-    item_rel = item.to_relative(100, 100, round_=3)
+    item_rel = item.to_relative(100, 100)
 
     assert item == item_rel.to_absolute(100, 100), "wrong 100"
     assert item != item_rel.to_absolute(99, 100), f"wrong 99"
     assert item != item_rel.to_absolute(101, 100), f"wrong 101"
-    pass
 
 
-if __name__ == "__main__":
+def run_tests():
     from inspect import isfunction
     
     # execute all local functions which name is beginning with "test_"
-    test_functions = [val for name,val in locals().items()
+    test_functions = [val for name,val in globals().items()
                          if isfunction(val) and name.startswith('test_')]
-    
     for func in test_functions:
         func()
+
+if __name__ == "__main__":
+    run_tests()
