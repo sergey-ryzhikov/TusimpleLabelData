@@ -11,7 +11,10 @@ from torch.autograd import Variable
 from torch.utils.data import Dataset
 
 from torchvision.io import read_image
-from . import LabelData
+from torchvision.transforms.functional import resize, resized_crop
+from torchvision.transforms import InterpolationMode
+
+from .label_data import LabelData
 
 class TusimpleDataset(Dataset):
     """ Dataset with road lanes.
@@ -19,7 +22,8 @@ class TusimpleDataset(Dataset):
     """
     def __init__(self, root, train=True, # download=False,
                         transform=None, target_transform=None,
-                        resize_to=(512, 256), crop=True):
+                        resize_to=(256, 512), crop=True,
+                        interpolation_mode=InterpolationMode.BICUBIC):
         """ 
             resize_to - images will be resized to (width, height)
             crop - keep aspect ratio by cropping images before resize
@@ -33,6 +37,7 @@ class TusimpleDataset(Dataset):
         self.img_size = resize_to
         self.img_crop = crop
         self.img_labels = self.load_items()
+        self.img_interpolation_mode = interpolation_mode
 
     def load_items(self):
         """ Parse json files in the dataset directory
@@ -58,10 +63,18 @@ class TusimpleDataset(Dataset):
                     raw_file = label['raw_file']
                     raw_files_labels[raw_file] = label
 
-        return list(sorted(raw_files_labels).values())
+
+        labels = dict(sorted(raw_files_labels.items())).values()
+        return list(labels)
 
     def __len__(self):  
         return len(self.img_labels)
+    
+    @classmethod
+    def find_crop(cls, w, h, new_w, new_h):
+        pass
+
+        return top, left, height, width
 
     def __getitem__(self, idx):
 
@@ -72,11 +85,11 @@ class TusimpleDataset(Dataset):
         h_samples = deepcopy(self.img_labels[idx]['h_samples'])
         raw_file = deepcopy(self.img_labels[idx]['raw_file'])
 
-        img_path = self.root / raw_file
+        img_path = str(self.root / raw_file)
         image = read_image(img_path)
         label = dict(
-            lanes = [np.array(lane) for lane in lanes],
-            h_samples = np.array(h_samples),
+            lanes = [np.array(lane, dtype=float) for lane in lanes],  # float to allow nan values
+            h_samples = np.array(h_samples, dtype=float),
             )
         
         # Replace '-2' placeholders with np.nan (for unambiguous transformations)
@@ -84,6 +97,12 @@ class TusimpleDataset(Dataset):
             lane[lane == -2] = np.nan  
 
         # TODO: Resize image and labels
+        c, h, w = image.shape
+        new_h, new_w = self.img_size
+
+        if (h, w) != (new_h, new_w):
+            if not self.img_crop:
+                image = resize(image, self.img_size, self.img_interpolation_mode)
         
 
         if self.transform:
