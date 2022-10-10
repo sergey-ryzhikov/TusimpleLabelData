@@ -12,11 +12,14 @@ class LabelData(dict):
         default = {'lanes': [], 'h_samples': [], 'raw_file': None}
         super().__init__({**default, **kwargs})
 
-        if not self.get('relative'):  # if false or None, just omit it
+        if 'relative' in self and self['relative'] != True:  # if false or None, just omit it
             del self['relative']
 
     def __repr__(self):
         return f"LabelData(raw_file='{self['raw_file']}')"
+
+    def __str__(self):
+        return self.to_json()
 
     @classmethod
     def from_json(cls, json_string):
@@ -33,7 +36,7 @@ class LabelData(dict):
         return json.dumps(ordered, sort_keys=False)
 
     def to_relative(self, dim_lanes, dim_h_samples, round_=2):
-        """ Convert absolute coordinates to relative (in %). 
+        """ Convert absolute coordinates to relative ones (in %). 
         """
         assert 'relative' not in self or not self['relative'], "Coordinates are relative already."
         assert dim_lanes >= self.max_lanes, "The 'dim_lanes' is less than the current maximum."
@@ -61,7 +64,7 @@ class LabelData(dict):
                             for x in lane]
                             for lane in self['lanes']],
             raw_file=self['raw_file'],
-            relative=None
+            relative=False
             )
 
     @property
