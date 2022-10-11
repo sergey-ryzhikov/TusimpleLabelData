@@ -102,16 +102,19 @@ class TusimpleDataset(Dataset):
         label = LabelData(lanes=lanes, h_samples=h_samples, raw_file=raw_file)
         
         c, h, w = image.shape
+        new_h, new_w = self.resize_to
+       
 
-        if self.resize_to != (h, w):
+        if new_h != h or new_w != w:
             if not self.crop:
                 image = resize(image, self.resize_to, self.interpolation_mode)
             else:  # keep aspect ratio, but crop the top or the sides
                 top, left, crop_h, crop_w = self.get_crop_params(h, w)
                 image = resized_crop(image, top, left, crop_h, crop_w,
                                       self.resize_to, self.interpolation_mode)
-                label.shift(top, left)
-            label.resize(h, w, *self.resize_to)
+                label.shift(top=top, left=left)
+            
+            label.resize(h - top, w - 2 * left, new_h, new_w)  # compensate for crop, since we are not cropping the label
 
         if self.transform:
             image = self.transform(image)
