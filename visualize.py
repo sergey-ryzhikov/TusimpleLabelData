@@ -3,7 +3,6 @@ import sys
 from pathlib import Path
 from matplotlib import pyplot as plt
 import numpy as np
-from functools import cmp_to_key
 
 if __name__ == '__main__':
     sys.path.append(str(Path(__file__).resolve().parent.parent))
@@ -24,8 +23,7 @@ def plot_image(img, label, numbers=True, fontsize=12, **plot_args):
     
 
     # Lanes in dataset are not in order, so sort them left to right
-    lanes_sorted = sorted(label.lanes, 
-                        key=cmp_to_key(lambda a,b: np.nansum(a-b)))  # compares only non-nan values
+    lanes_sorted = label.lanes_sorted
 
     for i, lane in enumerate(lanes_sorted):
         color = colors[i % len(colors)]

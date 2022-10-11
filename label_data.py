@@ -3,6 +3,10 @@ from collections import OrderedDict, namedtuple
 import numpy as np
 
 from dataclasses import dataclass, field
+from functools import cmp_to_key
+
+# Key metric for storting the lanes
+key_lanes = cmp_to_key(lambda a,b: np.nansum(a-b))  # compares only non-nan values
 
 @dataclass
 class LabelData:
@@ -78,6 +82,11 @@ class LabelData:
         for lane in self.lanes:
             lane *= width_ratio
         self.h_samples *= height_ratio
+
+    @property
+    def lanes_sorted(self):
+        """ Return lanes sorted left to right."""
+        return sorted(self.lanes, key=key_lanes)
 
 
 @dataclass
