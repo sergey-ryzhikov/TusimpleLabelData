@@ -10,17 +10,19 @@ else:
     from .dataset import TusimpleDataset
 
 
-def plot_image(img, label):
+def plot_image(img, label, **plot_args):
 
     prop_cycle = plt.rcParams['axes.prop_cycle']  # default colors
     colors = prop_cycle.by_key()['color']
 
     plt.imshow(img.detach().permute(1,2,0))
 
-    n = len(label.lanes)
     for i, lane in enumerate(label.lanes):
-        color = colors[i % n]
-        plt.plot(lane, label.h_samples, color=color)
+        color = colors[i % len(colors)]
+        plt.plot(lane, label.h_samples, 
+                **{'color': color, **plot_args}  # use default color if not specified
+                )
+
 
 if __name__ == "__main__":
 
@@ -29,6 +31,6 @@ if __name__ == "__main__":
 
     dataset = TusimpleDataset(sample_root, resize_to=(256, 512))
 
-    img, label = dataset[0]
+    img, label = dataset[7]
     plot_image(img, label)
     plt.show()
