@@ -13,10 +13,11 @@ from torchvision.io import read_image
 from torchvision.transforms.functional import resize, resized_crop, crop
 from torchvision.transforms import InterpolationMode
 
+from .label_data import LabelData
 
 class TusimpleDataset(Dataset):
     """ Dataset with road lanes.
-            Returns image and a list of lane coordinates.
+        Returns image and a list of lane coordinates.
     """
     def __init__(self, root, train=True, # download=False,
                         transform=None, target_transform=None,
@@ -31,10 +32,9 @@ class TusimpleDataset(Dataset):
         self.is_training = train
         self.transform = transform
         self.target_transform = target_transform
-
         self.resize_to = resize_to
         self.crop = crop
-        self.img_interpolation_mode = interpolation_mode
+        self.interpolation_mode = interpolation_mode
 
         self.img_labels = self._load_items(root)
 
@@ -98,25 +98,20 @@ class TusimpleDataset(Dataset):
 
         img_path = str(self.root / raw_file)
         image = read_image(img_path)
-        label = dict(
-            lanes = [np.array(lane, dtype=float) for lane in lanes],  # float to allow nan values
-            h_samples = np.array(h_samples, dtype=float),
-            )
-        
-        # Replace '-2' placeholders with np.nan (for unambiguous transformations)
-        for lane in label['lanes']:
-            lane[lane == -2] = np.nan  
 
+        label = LabelData(lanes=lanes, h_samples=h_samples, raw_file=raw_file)
+        
         c, h, w = image.shape
-        new_h, new_w = self.resize_to
 
         if self.resize_to != (h, w):
             if not self.crop:
-                image = resize(image, self.resize_to, self.img_interpolation_mode)
+                image = resize(image, self.resize_to, self.interpolation_mode)
             else:  # keep aspect ratio, but crop the top or the sides
-                top_left_height_width = self.get_crop_params(h, w)
-                image = resized_crop(image, *top_left_height_width,
-                                      self.resize_to, self.img_interpolation_mode)
+                top, left, crop_h, crop_w = self.get_crop_params(h, w)
+                image = resized_crop(image, top, left, crop_h, crop_w,
+                                      self.resize_to, self.interpolation_mode)
+                label.shift(top, left)
+            label.resize(h, w, self.resize_to)
 
         if self.transform:
             image = self.transform(image)

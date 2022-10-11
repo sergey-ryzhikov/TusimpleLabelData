@@ -4,50 +4,63 @@
 import json
 import sys
 from pathlib import Path
+from copy import deepcopy
 
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 from label_data import LabelData
 
 json_ok = '{"lanes": [[-2, 1, 2], [1, 2, 3]], "h_samples": [1, 2, 3], "raw_file": "aaa/bbb/01.jpg"}'
 json_ok_no_lanes = '{"lanes": [], "h_samples": [1, 2, 3], "raw_file": "aaa/bbb/01.jpg"}'
-
 dict_ok = json.loads(json_ok)
 
 
+def test_init():
+    ld = LabelData(**dict_ok)
+
+
 def test_from_json():
-    assert LabelData(**dict_ok) == LabelData.from_json(json_ok), "wrong"
-    LabelData.from_json(json_ok_no_lanes)
+    ld = LabelData.from_json(json_ok)
+
+
+def test_to_dict():
+    ld = LabelData(**dict_ok).to_dict()
+    assert ld == dict_ok, "wrong"
+
 
 def test_to_json():
-    res = LabelData(**dict_ok).to_json()
-    assert res == json_ok, f"wrong"
+    assert LabelData(**dict_ok).to_json() == json_ok, "wrong"
 
-def test_rerp():
-    json_ok_repr = "LabelData(raw_file='aaa/bbb/01.jpg')"
-    repr = LabelData(**dict_ok).__repr__()
-    assert repr == json_ok_repr, f"wrong __repr__: {repr}"
 
-def test_str():
-    json_ = LabelData(**dict_ok).to_json()
-    str_ =  str(LabelData(**dict_ok))
-    assert str_ == json_, f"wrong __str__: {str_}"
+def test_shift():
+    ld = LabelData(lanes=[[1,2,3],[4,5,6]], h_samples=[1,2,3], raw_file='')
+    ld1 = deepcopy(ld)
+    ld1.shift(left=1, top=1)
+    ans = ld1.to_dict()
+    assert ans['lanes'] == [[0,1,2], [3,4,5]], "wrong lanes"
+    assert ans['h_samples'] == [0,1,2], "wrong h_samples"
 
-def test_len():
-    n = len(LabelData(**dict_ok)['lanes'])
-    assert n != 0, "wrong len(x['lanes'])"
+    ld2 = deepcopy(ld)
+    ld2.shift(left=3, top=3)
+    ans = ld2.to_dict()
+    assert ans['lanes'] == [[-2,-2,0], [1,2,3]], "negative values?"
+    assert ans['h_samples'] == [-2,-1,0], "wrong h_samples"
 
-def test_del():
-    item = LabelData(**dict_ok)
-    del item['lanes']
+    ld2.shift(left=-1, top=-1)
+    ans = ld2.to_dict()
+    assert ans['lanes'] == [[-2,0,1], [2,3,4]], "wrong"  # internal representation allows negative values
+    assert ans['h_samples'] == [-1,0,1], "wrong h_samples"
+    
 
-def test_rel():
-    item = LabelData(**{'lanes': [[-2, 51]], 'h_samples': [1]})
-    item_rel = item.to_relative(100, 100)
+def test_resize():
+    ld = LabelData(lanes=[[10,20,30],[12,12,12]], h_samples=[10,20,30], raw_file='')
+    ld.resize(288, 512, 720, 1280)  # x2.5
+    ans = ld.to_dict()
+    assert ans['lanes'] == [[25, 50, 75], [30,30,30]], "wrong lanes"
+    assert ans['h_samples'] == [25,50,75], "wrong hsamples"
 
-    assert item == item_rel.to_absolute(100, 100), "wrong 100"
-    assert item != item_rel.to_absolute(99, 100), f"wrong 99"
-    assert item != item_rel.to_absolute(101, 100), f"wrong 101"
 
+
+# ----------
 
 def run_tests():
     from inspect import isfunction
