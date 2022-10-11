@@ -84,3 +84,5 @@ class LabelData:
 class LabelDataRelative(LabelData):
     """ Label data with relative values (in % instead of px)
     """
+    def __post_init__(self):
+        raise NotImplementedError("LabelDataRelative is not implemented yet.")
