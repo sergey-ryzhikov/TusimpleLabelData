@@ -1,7 +1,8 @@
 
 # How to shrink the dataset (11 GB → ~170 MB)
 
-## Steps:
+<!-- markdownlint-disable no-trailing-punctuation -->
+## Steps:  
 
 ### 1. Download the TUSimple dataset
 
