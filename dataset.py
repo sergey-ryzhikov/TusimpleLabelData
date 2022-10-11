@@ -24,7 +24,7 @@ class TusimpleDataset(Dataset):
                         resize_to=(256, 512), crop=True,
                         interpolation_mode=InterpolationMode.BICUBIC):
         """ 
-            resize_to - images will be resized to (width, height)
+            resize_to - images will be resized to (height, width)
             crop - keep aspect ratio by cropping images before resize
                    (from the top of from both sides equally, if needed)
         """
@@ -111,7 +111,7 @@ class TusimpleDataset(Dataset):
                 image = resized_crop(image, top, left, crop_h, crop_w,
                                       self.resize_to, self.interpolation_mode)
                 label.shift(top, left)
-            label.resize(h, w, self.resize_to)
+            label.resize(h, w, *self.resize_to)
 
         if self.transform:
             image = self.transform(image)
