@@ -1,13 +1,12 @@
-#!/usr/bin/env python3
-# import pytest
+import pytest
 
 import json
 import sys
 from pathlib import Path
 from copy import deepcopy
 
-sys.path.append(str(Path(__file__).resolve().parent.parent))
-from label_data import LabelData
+
+from .. import LabelData
 
 json_ok = '{"lanes": [[-2, 1, 2], [1, 2, 3]], "h_samples": [1, 2, 3], "raw_file": "aaa/bbb/01.jpg"}'
 json_ok_no_lanes = '{"lanes": [], "h_samples": [1, 2, 3], "raw_file": "aaa/bbb/01.jpg"}'
@@ -59,17 +58,3 @@ def test_resize():
     assert ans['h_samples'] == [25,50,75], "wrong hsamples"
 
 
-
-# ----------
-
-def run_tests():
-    from inspect import isfunction
-    
-    # execute all local functions which name is beginning with "test_"
-    test_functions = [val for name,val in globals().items()
-                         if isfunction(val) and name.startswith('test_')]
-    for func in test_functions:
-        func()
-
-if __name__ == "__main__":
-    run_tests()
