@@ -11,9 +11,16 @@ else:
 
 
 def plot_image(img, label):
+
+    prop_cycle = plt.rcParams['axes.prop_cycle']  # default colors
+    colors = prop_cycle.by_key()['color']
+
     plt.imshow(img.detach().permute(1,2,0))
-    for lane in label.lanes:
-        plt.plot(lane, label.h_samples)
+
+    n = len(label.lanes)
+    for i, lane in enumerate(label.lanes):
+        color = colors[i % n]
+        plt.plot(lane, label.h_samples, color=color)
 
 if __name__ == "__main__":
 
