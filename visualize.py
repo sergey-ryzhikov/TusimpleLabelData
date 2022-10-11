@@ -30,10 +30,10 @@ def plot_image(img, label, numbers=True, fontsize=12, **plot_args):
     for i, lane in enumerate(lanes_sorted):
         color = colors[i % len(colors)]
 
+        args = {'color': color, **plot_args}  # use default color if not specified
+
         # plot line
-        plt.plot(lane, label.h_samples, 
-                **{'color': color, **plot_args}  # use default color if not specified
-                )
+        plt.plot(lane, label.h_samples, **args)
 
         # plot line number
         if numbers:
@@ -41,11 +41,13 @@ def plot_image(img, label, numbers=True, fontsize=12, **plot_args):
             present_samples = label.h_samples[~np.isnan(lane)]
             y = np.nanmean(present_samples)
             plt.text(x, y, str(i+1), 
-                        color="red", fontsize=fontsize, weight='bold', ha='center', va='center')
+                        color="white", fontsize=fontsize, weight='bold', ha='center', va='center')
 
-            # plot number background
-            # circle = plt.Circle((x/width, y/height), fontsize/width, color=color, fill=True, zorder=2)
-            # ax.add_patch(circle)
+            # plot number background circle
+            circle = plt.Circle((x, y-1), fontsize, 
+                                color=color, fill=True, linewidth=3 
+                                )
+            ax.add_patch(circle)
 
     plt.show()
             
