@@ -28,28 +28,35 @@ def plot_image(img, label, numbers=True, fontsize=12, **plot_args):
     for i, lane in enumerate(lanes_sorted):
         color = colors[i % len(colors)]
 
-        args = {'color': color, **plot_args}  # use default color if not specified
+        args = {'color': color, **plot_args}  # use default colormap if color is not specified
+        # TODO: accept an iterable of colors
 
         # plot line
         plt.plot(lane, label.h_samples, **args)
 
-        # plot line number
-        if numbers:
-            x = np.nanmean(lane)
-            present_samples = label.h_samples[~np.isnan(lane)]
-            y = np.nanmean(present_samples)
-            plt.text(x, y, str(i+1), 
+        # plot number of line
+        if numbers :
+            idx_not_nan = ~np.isnan(lane)
+            if np.count_nonzero(idx_not_nan) < 2:  # at least two points required
+                continue
+
+            present_samples = label.h_samples[idx_not_nan]
+        
+            xpos = np.nanmean(lane)    
+            ypos = np.nanmean(present_samples)
+
+            # plot line number
+            plt.text(xpos, ypos, str(i+1), 
                         color="white", fontsize=fontsize, weight='bold', ha='center', va='center')
 
             # plot number background circle
-            circle = plt.Circle((x, y-1), fontsize, 
+            circle = plt.Circle((xpos, ypos), fontsize, 
                                 color=color, fill=True, linewidth=3 
                                 )
             ax.add_patch(circle)
 
     plt.show()
             
-
 
 
 if __name__ == "__main__":
@@ -59,8 +66,8 @@ if __name__ == "__main__":
 
     dataset = TusimpleDataset(sample_root, resize_to=(256, 512))
 
-    img, label = dataset[7]
-    plot_image(img, label, linewidth=10, alpha=0.5, )
+    img, label = dataset[9]
+    plot_image(img, label, linewidth=10, alpha=0.5, solid_capstyle='round' )
 
     plt.show()
 
